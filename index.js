@@ -2,46 +2,32 @@ import { readFile } from "node:fs/promises";
 import { createServer } from "node:https";
 import { Server as SocketIOServer } from "socket.io";
 import { Http3Server } from "@fails-components/webtransport";
-import express from 'express';
+
+
+/* SERVER SETUP */
 
 const key = await readFile("./key.pem");
 const cert = await readFile("./cert.pem");
 
-const app = express();
-// const httpsServer = createServer({ key, cert });
-
-const httpsServer = createServer({ key, cert }, async (req, res) => {
+const httpsServer = createServer({
+    key,
+    cert
+  }, async (req, res) => {
     if (req.method === "GET" && req.url === "/") {
-        const content = await readFile("./client/index.html");
-        res.writeHead(200, { "Content-Type": "text/html" });
-        res.write(content);
-        res.end();
+      const content = await readFile("./client/index.html");
+      res.writeHead(200, {
+        "content-type": "text/html"
+      });
+      res.write(content);
+      res.end();
     } else {
-        res.writeHead(404);
-        res.end();
+      res.writeHead(404).end();
     }
-}); // da doc socket.io
+});
 
 const port = process.env.PORT || 3000;
-
 httpsServer.listen(port, () => {
-    console.log('server listening at port', port);
-});
-
-const io = new SocketIOServer(httpsServer, {
-    transports: ["polling", "websocket", "webtransport"]
-});
-
-io.on("connection", (socket) => {
-    console.log(`connected with transport ${socket.conn.transport.name}`);
-  
-    socket.conn.on("upgrade", (transport) => {
-      console.log(`transport upgraded to ${transport.name}`);
-    });
-  
-    socket.on("disconnect", (reason) => {
-      console.log(`disconnected due to ${reason}`);
-    });
+    console.log('HTTPS server listening on port 3000');
 });
 
 const h3Server = new Http3Server({
@@ -66,3 +52,35 @@ const h3Server = new Http3Server({
       io.engine.onWebTransportSession(value);
     }
 })();
+
+const io = new SocketIOServer(httpsServer, {
+    transports: ["polling", "websocket", "webtransport"]
+});
+
+var SOCKET_LIST = {};
+
+io.on("connection", (socket) => {
+
+    socket.id = Math.floor(Math.random() * 100) + 1;
+    socket.x = 0;
+    socket.y = 0;
+
+    SOCKET_LIST[socket.id] = socket;
+
+    console.log("user " + socket.id + " connected with transport " + socket.conn.transport.name);
+
+    socket.conn.on("upgrade", (transport) => {
+        console.log("upgraded to " + transport.name);
+    });
+
+    socket.on("disconnect", (reason) => {
+        console.log("user " + socket.id + "disconnected due to " + reason);
+    });
+});
+
+/* ----------------- */
+
+
+
+
+

@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="en">
+<html lang="it">
   <head>
     <meta charset="UTF-8">
-    <title>Socket.IO WebTransport example</title>
+    <title>progetto tesi</title>
   </head>
   <body>
     <p>Status: <span id="status">Disconnected</span></p>
@@ -10,8 +10,12 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+
       const $status = document.getElementById("status");
       const $transport = document.getElementById("transport");
+      
+      var canvas = document.getElementById("canvas").getContext('2d');
+      canvas.font = '30px serif';
 
       const socket = io({
         transportOptions: {
@@ -45,5 +49,6 @@
         $transport.innerText = "N/A";
       });
     </script>
+
   </body>
 </html>
