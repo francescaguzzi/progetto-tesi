@@ -20,6 +20,7 @@
       const ctx = canvas.getContext("2d");
 
       const socket = io({
+        transports: ["webtransport"],
         transportOptions: {
           webtransport: {
             hostname: "127.0.0.1"

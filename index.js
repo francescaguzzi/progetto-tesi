@@ -60,7 +60,7 @@ const h3Server = new Http3Server({
 })();
 
 const io = new SocketIOServer(httpsServer, {
-    transports: ["polling", "websocket", "webtransport"]
+    transports: ["polling", "webtransport", "websocket"]
 });
 
 var SOCKET_LIST = {};
