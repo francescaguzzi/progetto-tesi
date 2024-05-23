@@ -41,16 +41,22 @@ const h3Server = new Http3Server({
   h3Server.startServer();
   
   (async () => {
-    const stream = await h3Server.sessionStream("/socket.io/");
-    const sessionReader = stream.getReader();
-  
-    while (true) {
-      const { done, value } = await sessionReader.read();
-      if (done) {
-        break;
+    
+    try {
+      const stream = await h3Server.sessionStream("/socket.io/");
+      const sessionReader = stream.getReader();
+
+      while (true) {
+          const { done, value } = await sessionReader.read();
+          if (done) {
+              break;
+          }
+          io.engine.onWebTransportSession(value);
       }
-      io.engine.onWebTransportSession(value);
-    }
+  } catch (error) {
+      console.error("Error in WebTransport session stream:", error);
+  }
+  
 })();
 
 const io = new SocketIOServer(httpsServer, {
@@ -69,13 +75,41 @@ io.on("connection", (socket) => {
 
     console.log("user " + socket.id + " connected with transport " + socket.conn.transport.name);
 
+    socket.emit("init", { id: socket.id, sockets: Object.values(SOCKET_LIST).map(s => ({ id: s.id, x: s.x, y: s.y })) });
+
     socket.conn.on("upgrade", (transport) => {
         console.log("upgraded to " + transport.name);
     });
 
+    socket.on("move", (data) => {
+      switch (data.direction) {
+          case "left":
+              socket.x -= 5;
+              break;
+          case "up":
+              socket.y -= 5;
+              break;
+          case "right":
+              socket.x += 5;
+              break;
+          case "down":
+              socket.y += 5;
+              break;
+      }
+
+      io.emit("update", { id: socket.id, x: socket.x, y: socket.y });
+    });
+
     socket.on("disconnect", (reason) => {
+        delete SOCKET_LIST[socket.id];
+        io.emit("remove", socket.id);
         console.log("user " + socket.id + "disconnected due to " + reason);
     });
+});
+
+// handle webtransport session errors
+io.engine.on('webtransport-error', (error) => {
+  console.error("WebTransport Error:", error);
 });
 
 /* ----------------- */
