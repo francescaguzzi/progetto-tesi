@@ -7,6 +7,7 @@
   <body>
     <p>Status: <span id="status">Disconnected</span></p>
     <p>Transport: <span id="transport">N/A</span></p>
+    <p>Players connected: <span id="numberPlayers"></span></p>
 
     <canvas id="canvas" width="600" height="600" style="border:1px solid #000;"></canvas>
 
@@ -15,7 +16,8 @@
 
       const $status = document.getElementById("status");
       const $transport = document.getElementById("transport");
-      
+      const $numberPlayers = document.getElementById("numberPlayers");
+
       const canvas = document.getElementById("canvas");
       const ctx = canvas.getContext("2d");
 
@@ -42,6 +44,8 @@
 
           $transport.innerText = transport.name;
         });
+
+
       });
 
       socket.on("init", (data) => {
@@ -69,6 +73,10 @@
       socket.on("remove", (id) => {
         delete players[id];
         draw();
+      });
+
+      socket.on("numPlayers", (number) => {
+        $numberPlayers.innerText = number.toString();
       });
 
       socket.on("connect_error", (err) => {

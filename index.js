@@ -64,8 +64,11 @@ const io = new SocketIOServer(httpsServer, {
 });
 
 var SOCKET_LIST = {};
+let numPlayers = 0;
 
 io.on("connection", (socket) => {
+
+    numPlayers++;
 
     socket.id = Math.floor(Math.random() * 100) + 1;
     socket.x = 0;
@@ -76,6 +79,8 @@ io.on("connection", (socket) => {
     console.log("user " + socket.id + " connected with transport " + socket.conn.transport.name);
 
     socket.emit("init", { id: socket.id, sockets: Object.values(SOCKET_LIST).map(s => ({ id: s.id, x: s.x, y: s.y })) });
+
+    io.emit("numPlayers", numPlayers);
 
     socket.conn.on("upgrade", (transport) => {
         console.log("upgraded to " + transport.name);
@@ -103,6 +108,10 @@ io.on("connection", (socket) => {
     socket.on("disconnect", (reason) => {
         delete SOCKET_LIST[socket.id];
         io.emit("remove", socket.id);
+
+        numPlayers--;
+        io.emit("numPlayers", numPlayers);
+
         console.log("user " + socket.id + "disconnected due to " + reason);
     });
 });
