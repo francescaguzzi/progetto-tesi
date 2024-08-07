@@ -3,15 +3,30 @@ import { createServer } from "node:https";
 import { Server as SocketIOServer } from "socket.io";
 import { Http3Server } from "@fails-components/webtransport";
 
+import express from "express";
+import fs from "fs";
+
+const app = express();
+app.use(express.static('client'));
 
 /* SERVER SETUP */
 
-const key = await readFile("./key.pem");
-const cert = await readFile("./cert.pem");
+const key = fs.readFileSync('./key.pem', 'utf8');
+const cert = fs.readFileSync('./cert.pem', 'utf8');
 
-const httpsServer = createServer({
+app.get('/', async (req, res) => {
+  try {
+      const content = await readFile("./client/index.html", "utf8");
+      res.send(content);
+  } catch (error) {
+      res.status(500).send('Error reading index.html');
+  }
+});
+
+/* const httpsServer = createServer({
     key,
-    cert
+    cert,
+    app
   }, async (req, res) => {
     if (req.method === "GET" && req.url === "/") {
       const content = await readFile("./client/index.html");
@@ -23,7 +38,9 @@ const httpsServer = createServer({
     } else {
       res.writeHead(404).end();
     }
-});
+}); */
+
+const httpsServer = createServer( {key, cert}, app);
 
 const port = process.env.PORT || 3000;
 httpsServer.listen(port, () => {
@@ -38,25 +55,25 @@ const h3Server = new Http3Server({
     privKey: key,
   });
   
-  h3Server.startServer();
+h3Server.startServer();
   
-  (async () => {
-    
-    try {
-      const stream = await h3Server.sessionStream("/socket.io/");
-      const sessionReader = stream.getReader();
+(async () => {
+  
+  try {
+    const stream = await h3Server.sessionStream("/socket.io/");
+    const sessionReader = stream.getReader();
 
-      while (true) {
-          const { done, value } = await sessionReader.read();
-          if (done) {
-              break;
-          }
-          io.engine.onWebTransportSession(value);
-      }
+    while (true) {
+        const { done, value } = await sessionReader.read();
+        if (done) {
+            break;
+        }
+        io.engine.onWebTransportSession(value);
+    }
   } catch (error) {
       console.error("Error in WebTransport session stream:", error);
   }
-  
+
 })();
 
 const io = new SocketIOServer(httpsServer, {
