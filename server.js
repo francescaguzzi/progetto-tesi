@@ -65,7 +65,9 @@ h3Server.startServer();
 })();
 
 const io = new SocketIOServer(httpsServer, {
-    transports: ["polling", "webtransport", "websocket"]
+    transports: ["polling", "webtransport", "websocket"],
+    // pingInterval: 5000, // 5 seconds
+    // pingTimeout: 5000, // timeout for inactive users
 });
 
 /* ----------------- */
@@ -124,6 +126,8 @@ io.on("connection", (socket) => {
       io.emit("numPlayers", numPlayers);
     });
 });
+
+/* ----------------- */
 
 // handle webtransport session errors
 io.engine.on('webtransport-error', (error) => {

@@ -1,4 +1,8 @@
 
+// forcing the client to use webtransport
+const TRANSPORT_NAME = "websocket";
+
+
 /* DISPLAYING CONNECTION STATUS */
 
 const $status = document.getElementById("status");
@@ -10,9 +14,8 @@ const $numberPlayers = document.getElementById("numberPlayers");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-// forcing webtransport protocol
 const socket = io({
-    transports: ["websocket"],
+    transports: [TRANSPORT_NAME],
     transportOptions: {
         webtransport: {
         hostname: "127.0.0.1"
@@ -76,10 +79,13 @@ function animate() {
 animate();
 
 
-
 socket.on("numPlayers", (number) => {
     $numberPlayers.innerText = number.toString();
 });
+
+
+
+
 
 
 /* ----------------- */
@@ -97,3 +103,4 @@ socket.on("disconnect", (reason) => {
     $transport.innerText = "N/A";
 });
 
+/* ----------------- */
