@@ -21,6 +21,8 @@ class Player {
 
     draw() {
         this.ctx.drawImage(this.image, this.x, this.y, 30, 30);
+        this.ctx.shadowColor = "grey";
+        this.ctx.shadowBlur = 20;
     } 
 
     clear() {

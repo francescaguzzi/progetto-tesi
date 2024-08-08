@@ -1,6 +1,6 @@
 
 // forcing the client to use webtransport
-const TRANSPORT_NAME = "webtransport";
+const TRANSPORT_NAME = "websocket";
 
 
 /* DISPLAYING CONNECTION STATUS */
@@ -85,7 +85,16 @@ socket.on('updatePlayers', (serverPlayers) => {
                 });
             }
             else { // update position of other players
-                clientPlayers[id].updatePosition(serverPlayer.x, serverPlayer.y);
+                
+                // clientPlayers[id].updatePosition(serverPlayer.x, serverPlayer.y);
+                
+                // interpolation
+                gsap.to(clientPlayers[id], { 
+                    x: serverPlayer.x, 
+                    y: serverPlayer.y, 
+                    duration: 0.0015,
+                    ease: "linear"
+                });
             }
         }
     }
