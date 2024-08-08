@@ -151,7 +151,7 @@ io.on("connection", (socket) => {
 
 setInterval(() => {
     io.emit("updatePlayers", serverPlayers);
-}, 15); // 15ms is recommended for 60fps
+}, 15 ); // 15ms is recommended for 60fps
         // increasing this -> delay in player movement
  
 

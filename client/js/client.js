@@ -35,6 +35,9 @@ const socket = io({
 
 /* ----------------- */
 
+/* PLAYERS CONNECTION AND RENDERING */
+
+
 let playerId;
 const clientPlayers = {};
 
@@ -105,26 +108,66 @@ socket.on('updatePlayers', (serverPlayers) => {
         }
     }
 
-    console.log(clientPlayers);
+    // console.log(clientPlayers);
 });
+
+socket.on("numPlayers", (number) => {
+    $numberPlayers.innerText = number.toString();
+});
+
+
+/* ----------------- */
+
+/* BULLETS EMITTING */
+
+const clientBullets = [];
+
+
+window.addEventListener("click", (e) => {
+
+    const playerPosition = {
+        x: clientPlayers[socket.id].x,
+        y: clientPlayers[socket.id].y
+    };
+
+    const angle = Math.atan2(e.clientY * window.devicePixelRatio - playerPosition.y,
+                            e.clientX * window.devicePixelRatio - playerPosition.x);
+    const velocity = {
+        x: Math.cos(angle) * 5,
+        y: Math.sin(angle) * 5
+    };
+
+    clientBullets.push( new Bullet({ x: playerPosition.x, y: playerPosition.y, velocity, ctx }) );
+
+    console.log(clientBullets);
+});  
+
+
+
+/* ----------------- */
+
+/* ANIMATION AND RENDERING */
 
 let animationId;
 function animate() {
     animationId = requestAnimationFrame(animate);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // player rendering
     for (const id in clientPlayers) {
         const player = clientPlayers[id];
         player.draw();
     }
+
+    // bullet rendering -> from the back of the array
+    for (let i = clientBullets.length - 1; i >= 0; i--) {
+
+        const bullet = clientBullets[i];
+        bullet.update();
+    }
+
 }
 animate();
-
-
-socket.on("numPlayers", (number) => {
-    $numberPlayers.innerText = number.toString();
-});
-
 
 
 /* ----------------- */
@@ -225,6 +268,17 @@ window.addEventListener("keyup", (e) => {
             break;
     }
 });
+
+
+/* ----------------- */
+
+
+
+
+
+
+
+
 
 
 /* ----------------- */
