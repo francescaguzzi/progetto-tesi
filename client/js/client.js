@@ -16,8 +16,8 @@ const devicePixelRatio = window.devicePixelRatio || 1;
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-canvas.width = window.innerWidth * devicePixelRatio;
-canvas.height = window.innerHeight * devicePixelRatio;
+//canvas.width = window.innerWidth * devicePixelRatio;
+//canvas.height = window.innerHeight * devicePixelRatio;
 
 const x = canvas.width / 2;
 const y = canvas.height / 2;
@@ -125,13 +125,20 @@ const clientBullets = [];
 
 window.addEventListener("click", (e) => {
 
+    const canvasRect = canvas.getBoundingClientRect();
+    
+    const clickPosition = {
+        x: e.clientX - canvasRect.left,
+        y: e.clientY - canvasRect.top
+    };
+
     const playerPosition = {
         x: clientPlayers[socket.id].x,
         y: clientPlayers[socket.id].y
     };
 
-    const angle = Math.atan2(e.clientY * window.devicePixelRatio - playerPosition.y,
-                            e.clientX * window.devicePixelRatio - playerPosition.x);
+    const angle = Math.atan2(clickPosition.y - playerPosition.y,
+                            clickPosition.x - playerPosition.x);
     const velocity = {
         x: Math.cos(angle) * 5,
         y: Math.sin(angle) * 5
