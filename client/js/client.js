@@ -65,7 +65,9 @@ socket.on('updatePlayers', (serverPlayers) => {
                 username: id,
                 ctx: ctx
             });
-        } 
+        } else {
+            clientPlayers[id].updatePosition(serverPlayer.x, serverPlayer.y);
+        }
     }
 
     for (const id in clientPlayers) {
@@ -96,12 +98,37 @@ socket.on("numPlayers", (number) => {
 
 
 
+/* ----------------- */
+
+// player movement
+
+window.addEventListener("keydown", (e) => {
+
+    if (!clientPlayers[socket.id]) return;
+    
+    // WASD movement
+    switch(e.key) {
+        case "w":
+            socket.emit("move", { direction: "up" });
+            break;
+        case "a":
+            socket.emit("move", { direction: "left" });        
+            break;
+        case "d":
+            socket.emit("move", { direction: "right" });
+            break;
+        case "s":
+            socket.emit("move", { direction: "down" });
+            break;
+    }
+});
+
 
 
 
 /* ----------------- */
 
-// connection error handling
+// connection error handling and disconnection
 
 socket.on("connect_error", (err) => {
     console.log(`connect_error due to ${err.message}`);

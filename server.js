@@ -87,33 +87,40 @@ io.on("connection", (socket) => {
 
     console.log("user " + socket.id + " connected with transport " + socket.conn.transport.name);
 
-    // socket.emit("init", { id: socket.id, sockets: Object.values(SOCKET_LIST).map(s => ({ id: s.id, x: s.x, y: s.y })) });
-
     io.emit("updatePlayers", serverPlayers);
     io.emit("numPlayers", numPlayers);
 
+    /* ----------------- */
+
+    // handle transport upgrades (e.g., from polling to websocket)
     socket.conn.on("upgrade", (transport) => {
-        console.log("upgraded to " + transport.name);
+        console.log("transport upgraded to " + transport.name);
     });
+
+    /* ----------------- */
+
+    // player movement handler -> given to ticker function
 
     socket.on("move", (data) => {
-      switch (data.direction) {
-          case "left":
-              socket.x -= 5;
-              break;
-          case "up":
-              socket.y -= 5;
-              break;
-          case "right":
-              socket.x += 5;
-              break;
-          case "down":
-              socket.y += 5;
-              break;
-      }
 
-      io.emit("update", { id: socket.id, x: socket.x, y: socket.y });
+        switch (data.direction) {
+            case "left":
+                serverPlayers[socket.id].x -= 5;
+                break;
+            case "up":
+                serverPlayers[socket.id].y -= 5;
+                break;
+            case "right":
+                serverPlayers[socket.id].x += 5;
+                break;
+            case "down":
+                serverPlayers[socket.id].y += 5;
+                break;
+        }
     });
+
+
+    /* ----------------- */
 
     socket.on("disconnect", (reason) => {
 
@@ -126,7 +133,19 @@ io.on("connection", (socket) => {
       numPlayers--;
       io.emit("numPlayers", numPlayers);
     });
+
 });
+
+/* ----------------- */
+
+// ticker function to update player positions
+// and emit the updated player positions to all clients
+// this prevents clogging the network with too many messages
+
+setInterval(() => {
+    io.emit("updatePlayers", serverPlayers);
+}, 15); // 15ms is recommended by Valve 
+ 
 
 /* ----------------- */
 
