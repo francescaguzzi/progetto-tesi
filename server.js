@@ -6,11 +6,16 @@ import { Http3Server } from "@fails-components/webtransport";
 import express from "express";
 import fs from "fs";
 
-const app = express();
-app.use(express.static('client'));
 
 /* SERVER SETUP */
 
+// using express to serve static files
+// and HTTP/3 server to handle WebTransport sessions with Socket.IO
+
+const app = express();
+app.use(express.static('client'));
+
+// required for HTTP/3
 const key = fs.readFileSync('./key.pem', 'utf8');
 const cert = fs.readFileSync('./cert.pem', 'utf8');
 
@@ -22,23 +27,6 @@ app.get('/', async (req, res) => {
       res.status(500).send('Error reading index.html');
   }
 });
-
-/* const httpsServer = createServer({
-    key,
-    cert,
-    app
-  }, async (req, res) => {
-    if (req.method === "GET" && req.url === "/") {
-      const content = await readFile("./client/index.html");
-      res.writeHead(200, {
-        "content-type": "text/html"
-      });
-      res.write(content);
-      res.end();
-    } else {
-      res.writeHead(404).end();
-    }
-}); */
 
 const httpsServer = createServer( {key, cert}, app);
 
@@ -80,23 +68,25 @@ const io = new SocketIOServer(httpsServer, {
     transports: ["polling", "webtransport", "websocket"]
 });
 
-var SOCKET_LIST = {};
+/* ----------------- */
+
+const players = {};
 let numPlayers = 0;
 
 io.on("connection", (socket) => {
 
     numPlayers++;
 
-    socket.id = Math.floor(Math.random() * 100) + 1;
-    socket.x = 0;
-    socket.y = 0;
-
-    SOCKET_LIST[socket.id] = socket;
+    players[socket.id] = {
+        x: 500 * Math.random(),
+        y: 500 * Math.random()
+    };
 
     console.log("user " + socket.id + " connected with transport " + socket.conn.transport.name);
 
-    socket.emit("init", { id: socket.id, sockets: Object.values(SOCKET_LIST).map(s => ({ id: s.id, x: s.x, y: s.y })) });
+    // socket.emit("init", { id: socket.id, sockets: Object.values(SOCKET_LIST).map(s => ({ id: s.id, x: s.x, y: s.y })) });
 
+    io.emit("updatePlayers", players);
     io.emit("numPlayers", numPlayers);
 
     socket.conn.on("upgrade", (transport) => {
@@ -123,13 +113,15 @@ io.on("connection", (socket) => {
     });
 
     socket.on("disconnect", (reason) => {
-        delete SOCKET_LIST[socket.id];
-        io.emit("remove", socket.id);
 
-        numPlayers--;
-        io.emit("numPlayers", numPlayers);
+      console.log("user " + socket.id + " disconnected due to " + reason);
+      
+      delete players[socket.id];
+        
+      io.emit("updatePlayers", players);
 
-        console.log("user " + socket.id + "disconnected due to " + reason);
+      numPlayers--;
+      io.emit("numPlayers", numPlayers);
     });
 });
 

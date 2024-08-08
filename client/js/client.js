@@ -1,13 +1,18 @@
 
+/* DISPLAYING CONNECTION STATUS */
+
 const $status = document.getElementById("status");
 const $transport = document.getElementById("transport");
 const $numberPlayers = document.getElementById("numberPlayers");
 
+/* ----------------- */
+
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
+// forcing webtransport protocol
 const socket = io({
-    transports: ["webtransport"],
+    transports: ["websocket"],
     transportOptions: {
         webtransport: {
         hostname: "127.0.0.1"
@@ -31,72 +36,64 @@ socket.on("connect", () => {
     });
 });
 
-socket.on("init", (data) => {
+socket.on('updatePlayers', (serverPlayers) => {
 
-    playerId = data.id;
-    data.sockets.forEach( player => {
-        players[player.id] = { x: player.x, y: player.y };
-    });
+    for (const id in serverPlayers) {
+        const serverPlayer = serverPlayers[id];
 
-    draw();
-});
+        if (!players[id]) {
 
-socket.on("update", (data) => {
-
-    if (players[data.id]) {
-        players[data.id].x = data.x;
-        players[data.id].y = data.y;
-        draw();
-    } else {
-        players[data.id] = { x: data.x, y: data.y };
-        draw();
+            players[id] = new Player({
+                x: serverPlayer.x,
+                y: serverPlayer.y,
+                radius: 5,
+                color: "black",
+                username: id
+            });
+        } 
     }
+
+    for (const id in players) {
+        if (!serverPlayers[id]) {
+            delete players[id];
+        }
+    }
+
+    console.log(players);
 });
 
-socket.on("remove", (id) => {
-    delete players[id];
-    draw();
-});
+let animationId;
+function animate() {
+    animationId = requestAnimationFrame(animate);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (const id in players) {
+        const player = players[id];
+        player.draw(ctx);
+    }
+}
+
+animate();
+
+
 
 socket.on("numPlayers", (number) => {
     $numberPlayers.innerText = number.toString();
 });
+
+
+/* ----------------- */
+
+// connection error handling
 
 socket.on("connect_error", (err) => {
     console.log(`connect_error due to ${err.message}`);
 });
 
 socket.on("disconnect", (reason) => {
-    console.log(`disconnect due to ${reason}`);
+    console.log(`Disconnect due to ${reason}`);
 
     $status.innerText = "Disconnected";
     $transport.innerText = "N/A";
 });
 
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    for (const id in players) {
-        const player = players[id];
-        ctx.fillStyle = "black";
-        ctx.fillRect(player.x, player.y, 5, 5);
-    }
-}
-
-window.addEventListener("keydown", (event) => {
-
-    switch (event.key) {
-        case "ArrowUp":
-        socket.emit("move", { direction: "up" });
-        break;
-        case "ArrowDown":
-        socket.emit("move", { direction: "down" });
-        break;
-        case "ArrowLeft":
-        socket.emit("move", { direction: "left" });
-        break;
-        case "ArrowRight":
-        socket.emit("move", { direction: "right" });
-        break;
-    }
-});

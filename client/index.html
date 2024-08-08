@@ -9,10 +9,13 @@
     <p>Transport: <span id="transport">N/A</span></p>
     <p>Players connected: <span id="numberPlayers"></span></p>
 
-    <canvas id="canvas" width="600" height="600" style="border:1px solid #000;"></canvas>
+    <div id="game">
+      <canvas id="canvas" width="800" height="600"></canvas>
+    </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script src="./js/client.js"></script>
+    <script src="./js/classes/Player.js"></script>
 
   </body>
 </html>
