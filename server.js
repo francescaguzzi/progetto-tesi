@@ -101,20 +101,22 @@ io.on("connection", (socket) => {
 
     // player movement handler -> given to ticker function
 
+    const SPEED = 5;
+
     socket.on("move", (data) => {
 
         switch (data.direction) {
             case "left":
-                serverPlayers[socket.id].x -= 5;
+                serverPlayers[socket.id].x -= SPEED;
                 break;
             case "up":
-                serverPlayers[socket.id].y -= 5;
+                serverPlayers[socket.id].y -= SPEED;
                 break;
             case "right":
-                serverPlayers[socket.id].x += 5;
+                serverPlayers[socket.id].x += SPEED;
                 break;
             case "down":
-                serverPlayers[socket.id].y += 5;
+                serverPlayers[socket.id].y += SPEED;
                 break;
         }
     });
@@ -144,7 +146,8 @@ io.on("connection", (socket) => {
 
 setInterval(() => {
     io.emit("updatePlayers", serverPlayers);
-}, 15); // 15ms is recommended by Valve 
+}, 15); // 15ms is recommended for 60fps
+        // increasing this -> delay in player movement
  
 
 /* ----------------- */

@@ -102,6 +102,38 @@ socket.on("numPlayers", (number) => {
 
 // player movement
 
+const keys = {
+    w: { pressed: false },
+    a: { pressed: false },
+    s: { pressed: false },
+    d: { pressed: false }
+}
+
+const SPEED = 5;
+
+setInterval(() => {
+
+    if (keys.w.pressed) {
+        clientPlayers[socket.id].y -= SPEED;
+        socket.emit("move", { direction: "up" });
+    }
+    if (keys.a.pressed) {
+        clientPlayers[socket.id].x -= SPEED;
+        socket.emit("move", { direction: "left" });
+    }
+    if (keys.s.pressed) {
+        clientPlayers[socket.id].y += SPEED;
+        socket.emit("move", { direction: "down" });
+    }
+    if (keys.d.pressed) {
+        clientPlayers[socket.id].x += SPEED;
+        socket.emit("move", { direction: "right" });
+    }
+
+}, 15);
+
+
+
 window.addEventListener("keydown", (e) => {
 
     if (!clientPlayers[socket.id]) return;
@@ -109,21 +141,39 @@ window.addEventListener("keydown", (e) => {
     // WASD movement
     switch(e.key) {
         case "w":
-            socket.emit("move", { direction: "up" });
+            keys.w.pressed = true;
             break;
         case "a":
-            socket.emit("move", { direction: "left" });        
-            break;
-        case "d":
-            socket.emit("move", { direction: "right" });
+            keys.a.pressed = true;
             break;
         case "s":
-            socket.emit("move", { direction: "down" });
+            keys.s.pressed = true;
+            break;
+        case "d":
+            keys.d.pressed = true;
             break;
     }
 });
 
+window.addEventListener("keyup", (e) => {
 
+    if (!clientPlayers[socket.id]) return;
+
+    switch(e.key) {
+        case "w":
+            keys.w.pressed = false;
+            break;
+        case "a":
+            keys.a.pressed = false;
+            break;
+        case "s":
+            keys.s.pressed = false;
+            break;
+        case "d":
+            keys.d.pressed = false;
+            break;
+    }
+});
 
 
 /* ----------------- */
