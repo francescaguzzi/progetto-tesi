@@ -1,25 +1,37 @@
 
 class Player {
 
-    constructor({ x, y, radius, color, username }) {
+    // sprites -> 1.png, 2.png, 3.png, 4.png
+    // randomly chosen on the server
+
+    constructor({ x, y, color, username, ctx }) {
         this.x = x;
         this.y = y;
-        this.radius = radius;
         this.color = color;
         this.username = username;
+        this.ctx = ctx;
+
+        this.image = new Image();
+        this.image.src = `./sprites/players/${color}.png`;
+
+        this.image.onload = () => {
+            this.draw();
+        };
     }
 
-    draw(ctx) {
-
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-        ctx.fillStyle = this.color;
-        ctx.fill();
+    draw() {
+        this.ctx.drawImage(this.image, this.x, this.y, 30, 30);
     } 
 
+    clear() {
+        this.ctx.clearRect(this.x, this.y, 30, 30);
+    }
+
     updatePosition(x, y) {
+        this.clear();
         this.x = x;
         this.y = y;
+        this.draw();
     }
 }
     

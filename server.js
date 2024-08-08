@@ -72,23 +72,24 @@ const io = new SocketIOServer(httpsServer, {
 
 /* ----------------- */
 
-const players = {};
+const serverPlayers = {};
 let numPlayers = 0;
 
 io.on("connection", (socket) => {
 
     numPlayers++;
 
-    players[socket.id] = {
+    serverPlayers[socket.id] = {
         x: 500 * Math.random(),
-        y: 500 * Math.random()
+        y: 500 * Math.random(),
+        color: Math.floor(Math.random() * 4) + 1
     };
 
     console.log("user " + socket.id + " connected with transport " + socket.conn.transport.name);
 
     // socket.emit("init", { id: socket.id, sockets: Object.values(SOCKET_LIST).map(s => ({ id: s.id, x: s.x, y: s.y })) });
 
-    io.emit("updatePlayers", players);
+    io.emit("updatePlayers", serverPlayers);
     io.emit("numPlayers", numPlayers);
 
     socket.conn.on("upgrade", (transport) => {
@@ -118,9 +119,9 @@ io.on("connection", (socket) => {
 
       console.log("user " + socket.id + " disconnected due to " + reason);
       
-      delete players[socket.id];
+      delete serverPlayers[socket.id];
         
-      io.emit("updatePlayers", players);
+      io.emit("updatePlayers", serverPlayers);
 
       numPlayers--;
       io.emit("numPlayers", numPlayers);

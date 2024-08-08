@@ -11,8 +11,18 @@ const $numberPlayers = document.getElementById("numberPlayers");
 
 /* ----------------- */
 
+const devicePixelRatio = window.devicePixelRatio || 1;
+
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth * devicePixelRatio;
+canvas.height = window.innerHeight * devicePixelRatio;
+
+const x = canvas.width / 2;
+const y = canvas.height / 2;
+
+/* ----------------- */
 
 const socket = io({
     transports: [TRANSPORT_NAME],
@@ -23,8 +33,10 @@ const socket = io({
     }
 });
 
+/* ----------------- */
+
 let playerId;
-const players = {};
+const clientPlayers = {};
 
 socket.on("connect", () => {
     console.log(`connected with transport ${socket.io.engine.transport.name}`);
@@ -44,25 +56,25 @@ socket.on('updatePlayers', (serverPlayers) => {
     for (const id in serverPlayers) {
         const serverPlayer = serverPlayers[id];
 
-        if (!players[id]) {
+        if (!clientPlayers[id]) {
 
-            players[id] = new Player({
+            clientPlayers[id] = new Player({
                 x: serverPlayer.x,
                 y: serverPlayer.y,
-                radius: 5,
-                color: "black",
-                username: id
+                color: serverPlayer.color,
+                username: id,
+                ctx: ctx
             });
         } 
     }
 
-    for (const id in players) {
+    for (const id in clientPlayers) {
         if (!serverPlayers[id]) {
-            delete players[id];
+            delete clientPlayers[id];
         }
     }
 
-    console.log(players);
+    console.log(clientPlayers);
 });
 
 let animationId;
@@ -70,12 +82,11 @@ function animate() {
     animationId = requestAnimationFrame(animate);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    for (const id in players) {
-        const player = players[id];
-        player.draw(ctx);
+    for (const id in clientPlayers) {
+        const player = clientPlayers[id];
+        player.draw();
     }
 }
-
 animate();
 
 
