@@ -82,7 +82,8 @@ io.on("connection", (socket) => {
     serverPlayers[socket.id] = {
         x: 500 * Math.random(),
         y: 500 * Math.random(),
-        color: Math.floor(Math.random() * 4) + 1
+        color: Math.floor(Math.random() * 4) + 1,
+        sequenceNumber: 0
     };
 
     console.log("user " + socket.id + " connected with transport " + socket.conn.transport.name);
@@ -103,9 +104,13 @@ io.on("connection", (socket) => {
 
     const SPEED = 5;
 
-    socket.on("move", (data) => {
+    socket.on("move", ({ direction, sequenceNumber}) => {
 
-        switch (data.direction) {
+        if(!serverPlayers[socket.id]) return;
+        
+        serverPlayers[socket.id].sequenceNumber = sequenceNumber;
+ 
+        switch (direction) {
             case "left":
                 serverPlayers[socket.id].x -= SPEED;
                 break;

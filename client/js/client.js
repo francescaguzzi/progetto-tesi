@@ -1,6 +1,6 @@
 
 // forcing the client to use webtransport
-const TRANSPORT_NAME = "websocket";
+const TRANSPORT_NAME = "webtransport";
 
 
 /* DISPLAYING CONNECTION STATUS */
@@ -65,8 +65,28 @@ socket.on('updatePlayers', (serverPlayers) => {
                 username: id,
                 ctx: ctx
             });
-        } else {
-            clientPlayers[id].updatePosition(serverPlayer.x, serverPlayer.y);
+        } else { // if a player already exists
+            
+            if ( id === socket.id ) {
+                
+                clientPlayers[id].updatePosition(serverPlayer.x, serverPlayer.y);
+                
+                // server reconciliation
+                const lastServerInputIndex = playerInputs.findIndex(input => {
+                    return serverPlayer.sequenceNumber === input.sequenceNumber;
+                });
+
+                if (lastServerInputIndex > -1) 
+                    playerInputs.splice(0, lastServerInputIndex + 1);
+                
+                playerInputs.forEach(input => {
+                    clientPlayers[id].x += input.dx;
+                    clientPlayers[id].y += input.dy;
+                });
+            }
+            else { // update position of other players
+                clientPlayers[id].updatePosition(serverPlayer.x, serverPlayer.y);
+            }
         }
     }
 
@@ -111,27 +131,49 @@ const keys = {
 
 const SPEED = 5;
 
+// variables for preventing lags in client/server communication
+const playerInputs = [];
+let sequenceNumber = 0;
+
+// we need to splice out the events that have already been processed by the server
+// while keeping the ones that haven't been processed yet
+
 setInterval(() => {
 
     if (keys.w.pressed) {
+
+        sequenceNumber++;
+        playerInputs.push({ sequenceNumber, dx: 0, dy: -SPEED });
         clientPlayers[socket.id].y -= SPEED;
-        socket.emit("move", { direction: "up" });
+        socket.emit("move", { direction: "up", sequenceNumber });
+
     }
     if (keys.a.pressed) {
+
+        sequenceNumber++;
+        playerInputs.push({ sequenceNumber, dx: -SPEED, dy: 0 });
         clientPlayers[socket.id].x -= SPEED;
-        socket.emit("move", { direction: "left" });
+        socket.emit("move", { direction: "left", sequenceNumber });
+
     }
     if (keys.s.pressed) {
+
+        sequenceNumber++;
+        playerInputs.push({ sequenceNumber, dx: 0, dy: SPEED });
         clientPlayers[socket.id].y += SPEED;
-        socket.emit("move", { direction: "down" });
+        socket.emit("move", { direction: "down", sequenceNumber });
+
     }
     if (keys.d.pressed) {
+
+        sequenceNumber++;
+        playerInputs.push({ sequenceNumber, dx: SPEED, dy: 0 });
         clientPlayers[socket.id].x += SPEED;
-        socket.emit("move", { direction: "right" });
+        socket.emit("move", { direction: "right", sequenceNumber });
+
     }
 
 }, 15);
-
 
 
 window.addEventListener("keydown", (e) => {
