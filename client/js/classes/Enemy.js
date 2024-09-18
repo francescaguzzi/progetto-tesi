@@ -19,9 +19,19 @@ class Enemy {
 
         this.width = 40;
         this.height = 40;
+
+        this.isdead = false;
     }
 
     draw() {
+
+        if (this.isdead) {
+
+            this.ctx.fillStyle = "black";
+            this.ctx.fillRect(this.x, this.y, this.width, this.height);
+            return;
+        }
+
 
         this.ctx.fillStyle = "red";
         this.ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -29,24 +39,8 @@ class Enemy {
         this.drawHealthBar();
     }
 
-    clear() {
-        this.ctx.clearRect(this.x, this.y, this.width, this.height);
-    }
-
-    manageHealth(damage) {
-
-        this.health -= damage;
-
-        if (this.health <= 0) {
-            this.health = 0;
-            this.die();
-        }
-    }
-
     die() {
-
-        console.log("enemy died");
-        this.clear();
+        this.isdead = true;
     }
 
     drawHealthBar() {

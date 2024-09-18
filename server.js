@@ -177,10 +177,6 @@ io.on("connection", (socket) => {
             playerId: socket.id
         };
 
-        
-        console.log(`Bullet position: (${x}, ${y}), velocity: (${velocity.x}, ${velocity.y})`);
-        console.log(`Enemy position: (${serverEnemy.x}, ${serverEnemy.y}), dimensions: (${serverEnemy.width}, ${serverEnemy.height})`);
-
     });
 
 
@@ -209,6 +205,8 @@ io.on("connection", (socket) => {
 
 setInterval(() => {
 
+    const bulletsToRemove = [];
+
     // update bullets
     for (const id in serverBullets) {
         serverBullets[id].x += serverBullets[id].velocity.x;
@@ -220,19 +218,27 @@ setInterval(() => {
 
             console.log("collision detected");
 
-            // remove bullet
-            delete serverBullets[id];
+            bulletsToRemove.push(id);
             
             serverEnemy.health -= 5;
 
             if (serverEnemy.health <= 0) {
+                
+                console.log("enemy died");
+
                 serverEnemy.health = 0;
                 io.emit("enemyDied");
+
             }
 
             io.emit("updateEnemy", serverEnemy);
         }
 
+    }
+
+    // remove bullets that have collided with the enemy
+    for (const id of bulletsToRemove) {
+        delete serverBullets[id];
     }
 
     io.emit("updateBullets", serverBullets);

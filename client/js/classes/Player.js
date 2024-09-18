@@ -11,6 +11,9 @@ class Player {
         this.username = username;
         this.ctx = ctx;
 
+        this.maxHealth = 100;
+        this.health = this.maxHealth;
+
         this.image = new Image();
         this.image.src = `./sprites/players/${color}.png`;
 
@@ -21,8 +24,6 @@ class Player {
 
     draw() {
         this.ctx.drawImage(this.image, this.x, this.y, 30, 30);
-        this.ctx.shadowColor = "grey";
-        this.ctx.shadowBlur = 20;
     } 
 
     clear() {

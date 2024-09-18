@@ -130,6 +130,13 @@ const clientBullets = {};
 
 socket.on("updateBullets", (serverBullets) => {
 
+    for (const id in clientBullets) {
+        if (!serverBullets[id]) {
+            delete clientBullets[id];
+        }
+    }
+
+
 
     for (const id in serverBullets) {
         const serverBullet = serverBullets[id];
