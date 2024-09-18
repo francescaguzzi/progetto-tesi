@@ -72,13 +72,17 @@ socket.on('updatePlayers', (serverPlayers) => {
                 y: serverPlayer.y,
                 color: serverPlayer.color,
                 username: id,
-                ctx: ctx
+                ctx: ctx,
+                health: serverPlayer.health
             });
         } else { // if a player already exists
             
             if ( id === socket.id ) {
                 
                 clientPlayers[id].updatePosition(serverPlayer.x, serverPlayer.y);
+
+                // update health
+                clientPlayers[id].health = serverPlayer.health;
                 
                 // server reconciliation
                 const lastServerInputIndex = playerInputs.findIndex(input => {
@@ -94,6 +98,9 @@ socket.on('updatePlayers', (serverPlayers) => {
                 });
             }
             else { // update position of other players
+
+                // update health
+                clientPlayers[id].health = serverPlayer.health;
                 
                 // clientPlayers[id].updatePosition(serverPlayer.x, serverPlayer.y);
                 
@@ -216,6 +223,39 @@ socket.on("enemyDied", () => {
 });
 
 
+/* ----------------- */
+
+// ENEMY BULLET RENDERING
+
+const clientEnemyBullets = {};
+
+socket.on("updateEnemyBullets", (serverEnemyBullets) => {
+
+    for (const id in clientEnemyBullets) {
+        if (!serverEnemyBullets[id]) {
+            delete clientEnemyBullets[id];
+        }
+    }
+
+    for (const id in serverEnemyBullets) {
+        const serverEnemyBullet = serverEnemyBullets[id];
+
+        if (!clientEnemyBullets[id]) {
+
+            clientEnemyBullets[id] = new Bullet({
+                x: serverEnemyBullet.x,
+                y: serverEnemyBullet.y,
+                velocity: serverEnemyBullet.velocity,
+                ctx: ctx
+            });
+        } else {
+            clientEnemyBullets[id].x = serverEnemyBullet.x;
+            clientEnemyBullets[id].y = serverEnemyBullet.y;
+            clientEnemyBullets[id].velocity = serverEnemyBullet.velocity;
+        }
+    }
+
+});
 
 
 
@@ -237,6 +277,11 @@ function animate() {
 
     for (const id in clientBullets) {
         const bullet = clientBullets[id];
+        bullet.draw();
+    }
+
+    for (const id in clientEnemyBullets) {
+        const bullet = clientEnemyBullets[id];
         bullet.draw();
     }
 

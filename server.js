@@ -86,6 +86,9 @@ const serverEnemy = {
     height: 40
 };
 
+const enemyBullets = {};
+let enemyBulletId = 0;
+
 /* ----------------- */
 
 io.on("connection", (socket) => {
@@ -96,7 +99,10 @@ io.on("connection", (socket) => {
         x: 500 * Math.random(),
         y: 500 * Math.random(),
         color: Math.floor(Math.random() * 4) + 1,
-        sequenceNumber: 0
+        sequenceNumber: 0,
+        width: 10,
+        height: 10,
+        health: 100
     };
 
     console.log("user " + socket.id + " connected with transport " + socket.conn.transport.name);
@@ -246,6 +252,86 @@ setInterval(() => {
     
 }, 15 ); // 15ms is recommended for 60fps
         // increasing this -> delay in player movement
+
+
+/* ----------------- */
+
+// ENEMY BULLET EMITTING
+
+setInterval(() => {
+
+    const numBullets = 30;
+    const angleIncrement = (2 * Math.PI) / numBullets; // radius emission
+
+    for (let i = 0; i < numBullets; i++) {
+
+        enemyBulletId++;
+        const angle = angleIncrement * i;
+
+        const velocity = {
+            x: Math.cos(angle) * 5,
+            y: Math.sin(angle) * 5
+        };
+
+        enemyBullets[enemyBulletId] = {
+            x: serverEnemy.x + serverEnemy.width / 2,
+            y: serverEnemy.y + serverEnemy.height / 2,
+            width: 5, // Assuming bullet width
+            height: 5, // Assuming bullet height
+            velocity
+        };
+    }
+
+    io.emit("updateEnemyBullets", enemyBullets);
+
+}, 2000); // Enemy shoots every 2 seconds
+
+
+setInterval(() => {
+
+    let damage = 10;
+
+    const enemyBulletsToRemove = [];
+
+    // Update enemy bullets
+    for (const id in enemyBullets) {
+        enemyBullets[id].x += enemyBullets[id].velocity.x;
+        enemyBullets[id].y += enemyBullets[id].velocity.y;
+
+        // Check for collisions with players
+        for (const playerId in serverPlayers) {
+            if (checkCollision(enemyBullets[id], serverPlayers[playerId])) {
+                console.log("Player hit by enemy bullet");
+
+                // Mark bullet for removal
+                enemyBulletsToRemove.push(id);
+
+                // Damage player
+                serverPlayers[playerId].health -= damage;
+
+                if (serverPlayers[playerId].health <= 0) {
+                    console.log("Player died");
+                    delete serverPlayers[playerId];
+                    io.emit("updatePlayers", serverPlayers);
+                }
+
+                io.emit("updatePlayer", serverPlayers[playerId]);
+            }
+        }
+    }
+
+    // Remove bullets that have collided with players
+    for (const id of enemyBulletsToRemove) {
+        delete enemyBullets[id];
+    }
+
+    io.emit("updateEnemyBullets", enemyBullets);
+}, 15); // Update at 60 FPS
+
+
+
+
+/* ----------------- */
  
 
 function checkCollision(bullet, enemy) {
