@@ -4,7 +4,7 @@ class Player {
     // sprites -> 1.png, 2.png, 3.png, 4.png
     // randomly chosen on the server
 
-    constructor({ x, y, color, username, ctx }) {
+    constructor({ x, y, color, username, ctx, health }) {
         this.x = x;
         this.y = y;
         this.color = color;
@@ -12,7 +12,7 @@ class Player {
         this.ctx = ctx;
 
         this.maxHealth = 100;
-        this.health = 100;
+        this.health = health;
 
         this.image = new Image();
         this.image.src = `./sprites/players/${color}.png`;
@@ -27,7 +27,6 @@ class Player {
 
     draw() {
         this.ctx.drawImage(this.image, this.x, this.y, 30, 30);
-
         this.drawHealthBar();
     } 
 
