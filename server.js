@@ -75,6 +75,9 @@ const io = new SocketIOServer(httpsServer, {
 const serverPlayers = {};
 let numPlayers = 0;
 
+const serverBullets = {};
+let bulletId = 0;
+
 io.on("connection", (socket) => {
 
     numPlayers++;
@@ -129,6 +132,31 @@ io.on("connection", (socket) => {
 
     /* ----------------- */
 
+    // handle player shooting
+
+    socket.on("shoot", ({ x, y, angle }) => {
+
+        bulletId++;
+
+        const velocity = {
+            x: Math.cos(angle) * 5,
+            y: Math.sin(angle) * 5
+        }; 
+
+        serverBullets[bulletId] = {
+            x,
+            y,
+            velocity,
+            playerId: socket.id
+        };
+
+
+    });
+
+
+
+    /* ----------------- */
+
     socket.on("disconnect", (reason) => {
 
       console.log("user " + socket.id + " disconnected due to " + reason);
@@ -145,12 +173,21 @@ io.on("connection", (socket) => {
 
 /* ----------------- */
 
-// ticker function to update player positions
+// ticker function to update player positions & bullets
 // and emit the updated player positions to all clients
 // this prevents clogging the network with too many messages
 
 setInterval(() => {
+
+    // update bullets
+    for (const id in serverBullets) {
+        serverBullets[id].x += serverBullets[id].velocity.x;
+        serverBullets[id].y += serverBullets[id].velocity.y;
+    }
+
+    io.emit("updateBullets", serverBullets);
     io.emit("updatePlayers", serverPlayers);
+    
 }, 15 ); // 15ms is recommended for 60fps
         // increasing this -> delay in player movement
  

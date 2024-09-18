@@ -120,7 +120,31 @@ socket.on("numPlayers", (number) => {
 
 /* BULLETS EMITTING */
 
-const clientBullets = [];
+const clientBullets = {};
+
+socket.on("updateBullets", (serverBullets) => {
+
+
+    for (const id in serverBullets) {
+        const serverBullet = serverBullets[id];
+
+        if (!clientBullets[id]) {
+
+            clientBullets[id] = new Bullet({
+                x: serverBullet.x,
+                y: serverBullet.y,
+                velocity: serverBullet.velocity,
+                ctx: ctx
+            });
+        } else {
+            clientBullets[id].x = serverBullet.x;
+            clientBullets[id].y = serverBullet.y;
+            clientBullets[id].velocity = serverBullet.velocity;
+        }
+    }
+
+});
+
 
 
 window.addEventListener("click", (e) => {
@@ -139,14 +163,15 @@ window.addEventListener("click", (e) => {
 
     const angle = Math.atan2(clickPosition.y - playerPosition.y,
                             clickPosition.x - playerPosition.x);
-    const velocity = {
-        x: Math.cos(angle) * 5,
-        y: Math.sin(angle) * 5
-    };
+    
 
-    clientBullets.push( new Bullet({ x: playerPosition.x, y: playerPosition.y, velocity, ctx }) );
+    socket.emit('shoot', {
+        x: playerPosition.x,
+        y: playerPosition.y,
+        angle
+    });
 
-    console.log(clientBullets);
+    // console.log(clientBullets);
 });  
 
 
@@ -166,11 +191,10 @@ function animate() {
         player.draw();
     }
 
-    // bullet rendering -> from the back of the array
-    for (let i = clientBullets.length - 1; i >= 0; i--) {
 
-        const bullet = clientBullets[i];
-        bullet.update();
+    for (const id in clientBullets) {
+        const bullet = clientBullets[id];
+        bullet.draw();
     }
 
 }
