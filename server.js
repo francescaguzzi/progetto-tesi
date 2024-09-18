@@ -89,6 +89,9 @@ const serverEnemy = {
 const enemyBullets = {};
 let enemyBulletId = 0;
 
+let canvasWidth = 0;
+let canvasHeight = 0;
+
 /* ----------------- */
 
 io.on("connection", (socket) => {
@@ -127,6 +130,9 @@ io.on("connection", (socket) => {
 
         serverEnemy.x = (width - serverEnemy.width) / 2;
         serverEnemy.y = (height - serverEnemy.height) / 2;
+
+        canvasWidth = width;
+        canvasHeight = height;
 
         io.emit("createEnemy", serverEnemy);
     });
@@ -258,10 +264,21 @@ setInterval(() => {
 
 // ENEMY BULLET EMITTING
 
+let numBullets = 6;
+
 setInterval(() => {
 
-    const numBullets = 30;
+    if (serverEnemy.health <= 0) return;
+    
+    if (numBullets <= 50)
+        numBullets++;
+    
     const angleIncrement = (2 * Math.PI) / numBullets; // radius emission
+
+    const centerX = (canvasWidth - serverEnemy.width) / 2;
+    const centerY = (canvasHeight - serverEnemy.height) / 2;
+
+    const bulletDim = 5;
 
     for (let i = 0; i < numBullets; i++) {
 
@@ -274,10 +291,10 @@ setInterval(() => {
         };
 
         enemyBullets[enemyBulletId] = {
-            x: serverEnemy.x + serverEnemy.width / 2,
-            y: serverEnemy.y + serverEnemy.height / 2,
-            width: 5, // Assuming bullet width
-            height: 5, // Assuming bullet height
+            x: centerX,
+            y: centerY,
+            width: bulletDim,
+            height: bulletDim,
             velocity
         };
     }
