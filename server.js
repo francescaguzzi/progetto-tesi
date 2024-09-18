@@ -78,6 +78,16 @@ let numPlayers = 0;
 const serverBullets = {};
 let bulletId = 0;
 
+const serverEnemy = {
+    x: 0,
+    y: 0,
+    health: 100,
+    width: 40,
+    height: 40
+};
+
+/* ----------------- */
+
 io.on("connection", (socket) => {
 
     numPlayers++;
@@ -100,6 +110,21 @@ io.on("connection", (socket) => {
     socket.conn.on("upgrade", (transport) => {
         console.log("transport upgraded to " + transport.name);
     });
+
+    /* ----------------- */
+
+    // handle canvas size initialization and enemy creation
+
+    socket.on("initCanvas", ({ width, height }) => {
+
+        // displays the enemy in the center of the canvas
+
+        serverEnemy.x = (width - serverEnemy.width) / 2;
+        serverEnemy.y = (height - serverEnemy.height) / 2;
+
+        io.emit("createEnemy", serverEnemy);
+    });
+
 
     /* ----------------- */
 
@@ -146,10 +171,15 @@ io.on("connection", (socket) => {
         serverBullets[bulletId] = {
             x,
             y,
+            width: 10,
+            height: 10,
             velocity,
             playerId: socket.id
         };
 
+        
+        console.log(`Bullet position: (${x}, ${y}), velocity: (${velocity.x}, ${velocity.y})`);
+        console.log(`Enemy position: (${serverEnemy.x}, ${serverEnemy.y}), dimensions: (${serverEnemy.width}, ${serverEnemy.height})`);
 
     });
 
@@ -183,6 +213,26 @@ setInterval(() => {
     for (const id in serverBullets) {
         serverBullets[id].x += serverBullets[id].velocity.x;
         serverBullets[id].y += serverBullets[id].velocity.y;
+
+        // check for collisions with the enemy
+
+        if (checkCollision(serverBullets[id], serverEnemy)) {
+
+            console.log("collision detected");
+
+            // remove bullet
+            delete serverBullets[id];
+            
+            serverEnemy.health -= 5;
+
+            if (serverEnemy.health <= 0) {
+                serverEnemy.health = 0;
+                io.emit("enemyDied");
+            }
+
+            io.emit("updateEnemy", serverEnemy);
+        }
+
     }
 
     io.emit("updateBullets", serverBullets);
@@ -191,6 +241,14 @@ setInterval(() => {
 }, 15 ); // 15ms is recommended for 60fps
         // increasing this -> delay in player movement
  
+
+function checkCollision(bullet, enemy) {
+    // Check if the bullet is within the enemy's bounding box
+    return bullet.x < enemy.x + enemy.width &&
+            bullet.x + bullet.width > enemy.x &&
+            bullet.y < enemy.y + enemy.height &&
+            bullet.y + bullet.height > enemy.y;
+}        
 
 /* ----------------- */
 

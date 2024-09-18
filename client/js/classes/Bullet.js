@@ -14,6 +14,9 @@ class Bullet {
         this.image.onload = () => {
             this.loaded = true;
         };
+
+        this.width = 10;
+        this.height = 10;
     }
 
     draw() {

@@ -41,6 +41,7 @@ const socket = io({
 let playerId;
 const clientPlayers = {};
 
+
 socket.on("connect", () => {
     console.log(`connected with transport ${socket.io.engine.transport.name}`);
 
@@ -51,8 +52,13 @@ socket.on("connect", () => {
         console.log(`transport upgraded to ${transport.name}`);
 
         $transport.innerText = transport.name;
-    });
+    }); 
+
+    // sending canvas size to the server
+    socket.emit("initCanvas", { width: canvas.width, height: canvas.height });
+
 });
+
 
 socket.on('updatePlayers', (serverPlayers) => {
 
@@ -174,6 +180,36 @@ window.addEventListener("click", (e) => {
     // console.log(clientBullets);
 });  
 
+/* ----------------- */
+
+// ENEMY RENDERING
+
+const clientEnemy = new Enemy({ x: 0, y: 0, ctx, health: 0, width: 0, height: 0 });
+
+socket.on("createEnemy", (serverEnemy) => {
+
+    clientEnemy.x = serverEnemy.x;
+    clientEnemy.y = serverEnemy.y;
+    clientEnemy.health = serverEnemy.health;
+    clientEnemy.width = serverEnemy.width;
+    clientEnemy.height = serverEnemy.height;
+
+});
+
+socket.on("updateEnemy", (serverEnemy) => {
+
+    clientEnemy.health = serverEnemy.health;
+
+});
+
+socket.on("enemyDied", () => {
+
+    clientEnemy.die();
+
+});
+
+
+
 
 
 /* ----------------- */
@@ -196,6 +232,8 @@ function animate() {
         const bullet = clientBullets[id];
         bullet.draw();
     }
+
+    clientEnemy.draw();
 
 }
 animate();
