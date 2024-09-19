@@ -45,10 +45,18 @@ class Enemy {
         if (this.isdead) {
             
             if (this.endLoaded) {
+
+                const endImageWidth = 60;
+                const endImageHeight = 60;
+
+                const centerX = this.x + (this.width / 2) - (endImageWidth / 2);
+                const centerY = this.y + (this.height / 2) - (endImageHeight / 2);
+
+
                 this.ctx.drawImage(
                     this.endImage, 
-                    this.x + (this.width / 2), this.y + (this.height / 2), // Posizione nel canvas
-                    50, 50 // Dimensioni nel canvas
+                    centerX, centerY, // Posizione nel canvas
+                    endImageWidth, endImageHeight // Dimensioni nel canvas
                 );
             }
             return;
