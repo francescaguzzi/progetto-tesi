@@ -16,8 +16,8 @@ class Player {
         this.image = new Image();
         this.image.src = `./sprites/player.png`;
 
-        this.width = 10;
-        this.height = 10;
+        this.width = 60;
+        this.height = 60;
 
         this.image.onload = () => {
             this.draw();
@@ -38,8 +38,8 @@ class Player {
         const healthBarWidth = 80;
         const healthBarHeight = 6;
 
-        const healthBarX = this.x + (30 / 2) - (healthBarWidth / 2);
-        const healthBarY = this.y - 10;
+        const healthBarX = this.x + (this.width / 2) - (healthBarWidth / 2);
+        const healthBarY = this.y - 12;
 
         // Drawing the health bar background
 
@@ -50,7 +50,7 @@ class Player {
 
         // Drawing the health bar
 
-        this.ctx.fillStyle = "red";
+        this.ctx.fillStyle = "#2c7454";
         this.ctx.fillRect(healthBarX, healthBarY, healthBarWidth * healthPercentage, healthBarHeight);
     }
 

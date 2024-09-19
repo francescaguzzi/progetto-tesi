@@ -266,7 +266,9 @@ socket.on("updateEnemyBullets", (serverEnemyBullets) => {
 /* ANIMATION AND RENDERING */
 
 let animationId;
-function animate() {
+let lastTime = 0;
+
+function animate(currentTime) {
     animationId = requestAnimationFrame(animate);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -287,7 +289,7 @@ function animate() {
         bullet.draw();
     }
 
-    clientEnemy.draw();
+    clientEnemy.draw(currentTime);
 
 }
 animate();

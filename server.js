@@ -82,8 +82,8 @@ const serverEnemy = {
     x: 0,
     y: 0,
     health: 100,
-    width: 40,
-    height: 40
+    width: 200,
+    height: 160,
 };
 
 const enemyBullets = {};
@@ -102,8 +102,8 @@ io.on("connection", (socket) => {
         x: 500 * Math.random(),
         y: 500 * Math.random(),
         sequenceNumber: 0,
-        width: 10,
-        height: 10,
+        width: 60,
+        height: 60,
         health: 100
     };
 
@@ -141,7 +141,7 @@ io.on("connection", (socket) => {
 
     // player movement handler -> given to ticker function
 
-    const SPEED = 5;
+    const SPEED = 4;
 
     socket.on("move", ({ direction, sequenceNumber}) => {
 
@@ -266,6 +266,7 @@ setInterval(() => {
 
 let numBullets = 6;
 
+
 setInterval(() => {
 
     if (serverEnemy.health <= 0) return;
@@ -275,8 +276,9 @@ setInterval(() => {
     
     const angleIncrement = (2 * Math.PI) / numBullets; // radius emission
 
-    const centerX = (canvasWidth - serverEnemy.width) / 2;
-    const centerY = (canvasHeight - serverEnemy.height) / 2;
+    const centerX = (canvasWidth - serverEnemy.width) / 2 + serverEnemy.width / 2;
+    const centerY = (canvasHeight - serverEnemy.height) / 2 + serverEnemy.height / 2;
+
 
     const bulletDim = 5;
 

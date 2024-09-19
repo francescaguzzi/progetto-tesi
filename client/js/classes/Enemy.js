@@ -7,34 +7,71 @@ class Enemy {
         this.y = y;
         this.ctx = ctx;
 
-        /* this.image = new Image();
-        this.image.src = "./sprites/enemy.gif";
+        this.image = new Image();
+        this.image.src = "./sprites/enemy-spritesheet.png";
 
         this.image.onload = () => {
             this.loaded = true;
-        }; */
+        };
+
+        this.endImage = new Image();
+        this.endImage.src = "./sprites/shoe.png";
+
+        this.endImage.onload = () => {
+            this.endLoaded = true;
+        }
+
+
+        // animation variables
+        this.frameIndex = 0;
+        this.frames = 4;
+        this.frameWidth = 250;
+        this.frameHeight = 200;
+        this.frameTime = 1000 / 3; // 3 frames per second
+        this.lastFrameTime = 0;
+
 
         this.maxHealth = 100;
         this.health = health;
 
-        this.width = 40;
-        this.height = 40;
+        this.width = 200;
+        this.height = 160;
 
         this.isdead = false;
     }
 
-    draw() {
+    draw(currentTime) {
 
         if (this.isdead) {
-
-            this.ctx.fillStyle = "black";
-            this.ctx.fillRect(this.x, this.y, this.width, this.height);
+            
+            if (this.endLoaded) {
+                this.ctx.drawImage(
+                    this.endImage, 
+                    this.x + (this.width / 2), this.y + (this.height / 2), // Posizione nel canvas
+                    50, 50 // Dimensioni nel canvas
+                );
+            }
             return;
         }
 
+        // Gestisce il cambio di frame ogni `frameTime` millisecondi
+        if (currentTime - this.lastFrameTime > this.frameTime) {
+            this.frameIndex = (this.frameIndex + 1) % this.frames; // Cambia frame in modo ciclico
+            this.lastFrameTime = currentTime;
+        }
 
-        this.ctx.fillStyle = "red";
-        this.ctx.fillRect(this.x, this.y, this.width, this.height);
+        // Disegna il frame corrente
+        this.ctx.drawImage(
+            this.image, 
+            this.frameIndex * this.frameWidth, 0, // Ritaglia il frame dalla spritesheet
+            this.frameWidth, this.frameHeight, // Dimensioni del frame
+            this.x, this.y, // Posizione nel canvas
+            this.width, this.height // Dimensioni del frame nel canvas
+        );
+
+
+        //this.ctx.fillStyle = "red";
+        //this.ctx.fillRect(this.x, this.y, this.width, this.height);
 
         this.drawHealthBar();
     }
@@ -60,7 +97,7 @@ class Enemy {
         const healthPercentage = this.health / this.maxHealth;
 
         // Drawing the health bar
-        this.ctx.fillStyle = "green";
+        this.ctx.fillStyle = "#cc6c34";
         this.ctx.fillRect(healthBarX, healthBarY, healthBarWidth * healthPercentage, healthBarHeight);
     
     }   
