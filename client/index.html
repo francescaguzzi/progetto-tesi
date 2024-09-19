@@ -9,8 +9,19 @@
     <p>Transport: <span id="transport">N/A</span></p>
     <p>Players connected: <span id="numberPlayers"></span></p>
 
+    <style>
+
+      #gameCanvas{
+          background-image:    url(/sprites/base.png);
+          background-size:     cover;                      
+          background-repeat:   no-repeat;
+          background-position: center center;
+      }
+      
+    </style>
+
     <div id="game">
-      <canvas id="canvas" width="900" height="600" style="border:2px solid #000000; margin-right: auto; margin-left: auto; display: block;"></canvas>
+      <canvas id="gameCanvas" width="800" height="600" style="border:2px solid #000000; margin-right: auto; margin-left: auto; display: block;"></canvas>
     </div>
 
     <script

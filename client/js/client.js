@@ -13,7 +13,7 @@ const $numberPlayers = document.getElementById("numberPlayers");
 
 const devicePixelRatio = window.devicePixelRatio || 1;
 
-const canvas = document.getElementById("canvas");
+const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 //canvas.width = window.innerWidth * devicePixelRatio;
@@ -70,7 +70,6 @@ socket.on('updatePlayers', (serverPlayers) => {
             clientPlayers[id] = new Player({
                 x: serverPlayer.x,
                 y: serverPlayer.y,
-                color: serverPlayer.color,
                 username: id,
                 ctx: ctx,
                 health: serverPlayer.health
@@ -153,6 +152,7 @@ socket.on("updateBullets", (serverBullets) => {
             clientBullets[id] = new Bullet({
                 x: serverBullet.x,
                 y: serverBullet.y,
+                type: serverBullet.type,
                 velocity: serverBullet.velocity,
                 ctx: ctx
             });
@@ -245,12 +245,14 @@ socket.on("updateEnemyBullets", (serverEnemyBullets) => {
             clientEnemyBullets[id] = new Bullet({
                 x: serverEnemyBullet.x,
                 y: serverEnemyBullet.y,
+                type: serverEnemyBullet.type,
                 velocity: serverEnemyBullet.velocity,
                 ctx: ctx
             });
         } else {
             clientEnemyBullets[id].x = serverEnemyBullet.x;
             clientEnemyBullets[id].y = serverEnemyBullet.y;
+            clientEnemyBullets[id].type = serverEnemyBullet.type;
             clientEnemyBullets[id].velocity = serverEnemyBullet.velocity;
         }
     }

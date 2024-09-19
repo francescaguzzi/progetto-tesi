@@ -101,7 +101,6 @@ io.on("connection", (socket) => {
     serverPlayers[socket.id] = {
         x: 500 * Math.random(),
         y: 500 * Math.random(),
-        color: Math.floor(Math.random() * 4) + 1,
         sequenceNumber: 0,
         width: 10,
         height: 10,
@@ -185,6 +184,7 @@ io.on("connection", (socket) => {
             y,
             width: 10,
             height: 10,
+            type: "player",
             velocity,
             playerId: socket.id
         };
@@ -293,6 +293,7 @@ setInterval(() => {
         enemyBullets[enemyBulletId] = {
             x: centerX,
             y: centerY,
+            type: "enemy",
             width: bulletDim,
             height: bulletDim,
             velocity

@@ -4,10 +4,9 @@ class Player {
     // sprites -> 1.png, 2.png, 3.png, 4.png
     // randomly chosen on the server
 
-    constructor({ x, y, color, username, ctx, health }) {
+    constructor({ x, y, username, ctx, health }) {
         this.x = x;
         this.y = y;
-        this.color = color;
         this.username = username;
         this.ctx = ctx;
 
@@ -15,7 +14,7 @@ class Player {
         this.health = health;
 
         this.image = new Image();
-        this.image.src = `./sprites/players/${color}.png`;
+        this.image.src = `./sprites/player.png`;
 
         this.width = 10;
         this.height = 10;
@@ -26,12 +25,12 @@ class Player {
     }
 
     draw() {
-        this.ctx.drawImage(this.image, this.x, this.y, 30, 30);
+        this.ctx.drawImage(this.image, this.x, this.y, 60, 60);
         this.drawHealthBar();
     } 
 
     clear() {
-        this.ctx.clearRect(this.x, this.y, 30, 30);
+        this.ctx.clearRect(this.x, this.y, 60, 60);
     }
 
     drawHealthBar() {
