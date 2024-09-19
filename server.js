@@ -264,7 +264,7 @@ setInterval(() => {
 
 // ENEMY BULLET EMITTING
 
-let numBullets = 6;
+let numBullets = 0;
 
 
 setInterval(() => {
