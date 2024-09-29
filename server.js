@@ -246,6 +246,12 @@ setInterval(() => {
             io.emit("updateEnemy", serverEnemy);
         }
 
+        // check for out of bounds bullets
+        if (checkOutOfBounds(serverBullets[id])) {
+            // console.log("bullet out of bounds");
+            bulletsToRemove.push(id);
+        }
+
     }
 
     // remove bullets that have collided with the enemy
@@ -338,6 +344,11 @@ setInterval(() => {
                 io.emit("updatePlayer", serverPlayers[playerId]);
             }
         }
+
+        // Check for out of bounds bullets
+        if (checkOutOfBounds(enemyBullets[id])) {
+            enemyBulletsToRemove.push(id);
+        }
     }
 
     // Remove bullets that have collided with players
@@ -361,6 +372,16 @@ function checkCollision(bullet, enemy) {
             bullet.y < enemy.y + enemy.height &&
             bullet.y + bullet.height > enemy.y;
 }        
+
+/* ----------------- */
+
+// function that deletes bullets that go out of bounds
+
+function checkOutOfBounds(bullet) {
+    return bullet.x < 0 || bullet.x > canvasWidth 
+            || bullet.y < 0 || bullet.y > canvasHeight;
+}
+
 
 /* ----------------- */
 
